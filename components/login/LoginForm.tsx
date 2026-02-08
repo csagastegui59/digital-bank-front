@@ -18,15 +18,26 @@ import {
   Typography,
 } from '@mui/material';
 import { COLORS } from '@/constants/colors';
-import { authService, ApiError } from '@/services/api';
-import { authStorage } from '@/utils/auth';
+import { authService, ApiError } from '@/services/auth/auth-service';
+
+// Helper para guardar en cookies
+const saveToCookies = (accessToken: string, refreshToken: string, user: any) => {
+  const maxAge = 7 * 24 * 60 * 60; // 7 días
+  document.cookie = `access_token=${accessToken}; path=/; max-age=${maxAge}; SameSite=Lax`;
+  document.cookie = `refresh_token=${refreshToken}; path=/; max-age=${maxAge}; SameSite=Lax`;
+  document.cookie = `user=${JSON.stringify(user)}; path=/; max-age=${maxAge}; SameSite=Lax`;
+};
 
 export default function LoginForm() {
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
+  const [firstname, setFirstname] = useState('');
+  const [lastname, setLastname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [firstnameError, setFirstnameError] = useState('');
+  const [lastnameError, setLastnameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [canSignup, setCanSignup] = useState(true);
@@ -70,6 +81,24 @@ export default function LoginForm() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const validateFirstname = (name: string): boolean => {
+    if (!name.trim()) {
+      setFirstnameError('El nombre es requerido');
+      return false;
+    }
+    setFirstnameError('');
+    return true;
+  };
+
+  const validateLastname = (name: string): boolean => {
+    if (!name.trim()) {
+      setLastnameError('El apellido es requerido');
+      return false;
+    }
+    setLastnameError('');
+    return true;
   };
 
   const validateEmail = (email: string): boolean => {
@@ -118,10 +147,16 @@ export default function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    let isValid = true;
+    
+    if (!isLogin) {
+      isValid = validateFirstname(firstname) && validateLastname(lastname) && isValid;
+    }
+    
     const isEmailValid = validateEmail(email);
     const isPasswordValid = validatePassword(password);
 
-    if (!isEmailValid || !isPasswordValid) {
+    if (!isValid || !isEmailValid || !isPasswordValid) {
       toast.error('Por favor completa todos los campos correctamente');
       return;
     }
@@ -133,14 +168,19 @@ export default function LoginForm() {
 
       if (isLogin) {
         response = await authService.login({ email, password });
-        setTimeout(() => {
-          toast.success('¡Inicio de sesión exitoso!');
-        }, 500);
+        toast.success('¡Inicio de sesión exitoso!');
       } else {
-        response = await authService.signup({ email, password, role: 'CUSTOMER' });
+        response = await authService.signup({ 
+          firstname, 
+          lastname, 
+          email, 
+          password, 
+          role: 'CUSTOMER' 
+        });
         toast.success('¡Cuenta creada exitosamente!');
       }
-      authStorage.saveAuth(response);
+      
+      saveToCookies(response.accessToken, response.refreshToken, response.user);
 
       setTimeout(() => {
         router.push('/dashboard');
@@ -153,7 +193,6 @@ export default function LoginForm() {
       }
       console.error('Error de autenticación:', error);
     } finally {
-
       setLoading(false);
     }
   };
@@ -205,6 +244,80 @@ export default function LoginForm() {
                   Tiempo restante: {formatTime(remainingSeconds)}
                 </Typography>
               </Alert>
+            )}
+            {/* Name Fields - Only for Signup */}
+            {!isLogin && (
+              <>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <InputLabel htmlFor="firstname" sx={{ color: COLORS.text.light, fontWeight: 'bold' }}>
+                    Nombre(s)
+                  </InputLabel>
+                  <OutlinedInput
+                    fullWidth
+                    id="firstname"
+                    type="text"
+                    value={firstname}
+                    onChange={(e) => setFirstname(e.target.value)}
+                    onBlur={() => validateFirstname(firstname)}
+                    error={!!firstnameError}
+                    placeholder="Ej: Christian Enrique"
+                    sx={{
+                      color: COLORS.text.dark,
+                      backgroundColor: COLORS.background.input,
+                      borderColor: firstnameError ? COLORS.state.error : COLORS.text.light,
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: firstnameError ? COLORS.state.error : COLORS.border.default,
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: firstnameError ? COLORS.state.error : COLORS.text.light,
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: firstnameError ? COLORS.state.error : COLORS.text.light,
+                      },
+                    }}
+                  />
+                  {firstnameError && (
+                    <Box sx={{ color: COLORS.state.error, fontSize: '0.875rem', mt: 0.5 }}>
+                      {firstnameError}
+                    </Box>
+                  )}
+                </Box>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <InputLabel htmlFor="lastname" sx={{ color: COLORS.text.light, fontWeight: 'bold' }}>
+                    Apellido(s)
+                  </InputLabel>
+                  <OutlinedInput
+                    fullWidth
+                    id="lastname"
+                    type="text"
+                    value={lastname}
+                    onChange={(e) => setLastname(e.target.value)}
+                    onBlur={() => validateLastname(lastname)}
+                    error={!!lastnameError}
+                    placeholder="Ej: Gonzales Garcia"
+                    sx={{
+                      color: COLORS.text.dark,
+                      backgroundColor: COLORS.background.input,
+                      borderColor: lastnameError ? COLORS.state.error : COLORS.text.light,
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: lastnameError ? COLORS.state.error : COLORS.border.default,
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: lastnameError ? COLORS.state.error : COLORS.text.light,
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: lastnameError ? COLORS.state.error : COLORS.text.light,
+                      },
+                    }}
+                  />
+                  {lastnameError && (
+                    <Box sx={{ color: COLORS.state.error, fontSize: '0.875rem', mt: 0.5 }}>
+                      {lastnameError}
+                    </Box>
+                  )}
+                </Box>
+              </>
             )}
 
             <Box

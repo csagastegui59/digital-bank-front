@@ -1,6 +1,8 @@
 const API_URL = 'https://digital-bank-0efq.onrender.com';
 
 export interface SignupRequest {
+  firstname: string;
+  lastname: string;
   email: string;
   password: string;
   role?: 'ADMIN' | 'OPS' | 'CUSTOMER';
@@ -16,6 +18,8 @@ export interface AuthResponse {
     id: string;
     email: string;
     role: string;
+    firstname: string;
+    lastname: string;
     isActive?: boolean;
   };
   accessToken: string;

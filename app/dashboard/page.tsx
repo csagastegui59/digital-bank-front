@@ -1,165 +1,46 @@
-'use client';
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
+import DashboardClient from './DashboardClient';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'react-toastify';
-import { Box, Container, Typography, Button, Card, CircularProgress } from '@mui/material';
-import { COLORS } from '@/constants/colors';
-import { authStorage } from '@/utils/auth';
-import { authService } from '@/services/api';
+const API_URL = 'https://digital-bank-0efq.onrender.com';
 
-export default function DashboardPage() {
-  const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+export default async function DashboardPage() {
+  // Obtener cookies directamente
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get('access_token')?.value;
+  const userCookie = cookieStore.get('user')?.value;
 
-  useEffect(() => {
-    if (!authStorage.isAuthenticated()) {
-      router.push('/');
-      return;
-    }
-
-    const userData = authStorage.getUser();
-    setUser(userData);
-    setLoading(false);
-  }, [router]);
-
-  const handleLogout = async () => {
-    const accessToken = authStorage.getAccessToken();
-    
-    if (accessToken) {
-      try {
-        await authService.logout(accessToken);
-        toast.success('Sesión cerrada correctamente');
-      } catch (error) {
-        toast.warning('Sesión cerrada localmente');
-      }
-    } else {
-      console.warn('No access token found');
-    }
-
-    authStorage.clearAuth();
-    
-    setTimeout(() => {
-      router.push('/');
-    }, 500);
-  };
-
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: `linear-gradient(135deg, ${COLORS.background.gradient.start} 0%, ${COLORS.background.gradient.end} 100%)`,
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
+  // Verificar autenticación
+  if (!accessToken || !userCookie) {
+    redirect('/');
   }
 
-  return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        background: `linear-gradient(135deg, ${COLORS.background.gradient.start} 0%, ${COLORS.background.gradient.end} 100%)`,
-        py: 4,
-      }}
-    >
-      <Container maxWidth="lg">
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            mb: 4,
-          }}
-        >
-          <Typography
-            variant="h4"
-            sx={{
-              color: COLORS.text.light,
-              fontWeight: 'bold',
-            }}
-          >
-            Dashboard
-          </Typography>
-          <Button
-            variant="outlined"
-            onClick={handleLogout}
-            sx={{
-              color: COLORS.text.light,
-              borderColor: COLORS.text.light,
-              '&:hover': {
-                borderColor: COLORS.button.primary.background,
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              },
-            }}
-          >
-            Cerrar Sesión
-          </Button>
-        </Box>
-        <Card
-          elevation={24}
-          sx={{
-            backgroundColor: COLORS.background.card,
-            backdropFilter: 'blur(20px)',
-            borderRadius: 4,
-            p: 4,
-            border: `1px solid ${COLORS.border.card}`,
-          }}
-        >
-          <Typography variant="h5" sx={{ color: COLORS.text.light, mb: 3, fontWeight: 'bold' }}>
-            Información del Usuario
-          </Typography>
-          
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box>
-              <Typography sx={{ color: COLORS.text.light, opacity: 0.7, fontSize: '0.875rem' }}>
-                Email
-              </Typography>
-              <Typography sx={{ color: COLORS.text.light, fontSize: '1.125rem', fontWeight: 500 }}>
-                {user?.email}
-              </Typography>
-            </Box>
+  // Parse user data
+  let user;
+  try {
+    user = JSON.parse(userCookie);
+  } catch {
+    redirect('/');
+  }
 
-            <Box>
-              <Typography sx={{ color: COLORS.text.light, opacity: 0.7, fontSize: '0.875rem' }}>
-                Rol
-              </Typography>
-              <Typography sx={{ color: COLORS.text.light, fontSize: '1.125rem', fontWeight: 500 }}>
-                {user?.role}
-              </Typography>
-            </Box>
+  // Obtener cuentas del usuario desde el servidor
+  let accounts = [];
+  try {
+    const response = await fetch(`${API_URL}/accounts/user/${user.id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      cache: 'no-store',
+    });
 
-            <Box>
-              <Typography sx={{ color: COLORS.text.light, opacity: 0.7, fontSize: '0.875rem' }}>
-                Estado
-              </Typography>
-              <Typography sx={{ color: user?.isActive ? COLORS.state.success : COLORS.state.error, fontSize: '1.125rem', fontWeight: 500 }}>
-                {user?.isActive ? 'Activo' : 'Inactivo'}
-              </Typography>
-            </Box>
+    if (response.ok) {
+      accounts = await response.json();
+    }
+  } catch (error) {
+    console.error('Error fetching accounts:', error);
+  }
 
-            <Box>
-              <Typography sx={{ color: COLORS.text.light, opacity: 0.7, fontSize: '0.875rem' }}>
-                ID
-              </Typography>
-              <Typography sx={{ color: COLORS.text.light, fontSize: '0.875rem', fontFamily: 'monospace' }}>
-                {user?.id}
-              </Typography>
-            </Box>
-          </Box>
-        </Card>
-        <Box sx={{ mt: 4, textAlign: 'center' }}>
-          <Typography sx={{ color: COLORS.text.light, opacity: 0.7 }}>
-            Más funcionalidades próximamente...
-          </Typography>
-        </Box>
-      </Container>
-    </Box>
-  );
+  return <DashboardClient user={user} accounts={accounts} />;
 }

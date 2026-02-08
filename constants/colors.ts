@@ -30,6 +30,8 @@ export const COLORS = {
     success: '#4caf50',
     warning: '#ff9800',
     info: '#2196f3',
+    successHover: '#45a049',
+    errorHover: '#da190b',
   },
 
   button: {
