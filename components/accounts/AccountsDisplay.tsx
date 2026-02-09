@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Box, Card, Grid, Typography, Button } from '@mui/material';
+import { Box, Card, Grid, Typography, Button, Alert, IconButton } from '@mui/material';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { COLORS } from '@/constants/colors';
 import { Account } from '@/services/account/account-service';
 import { toast } from 'react-toastify';
@@ -163,23 +164,23 @@ export default function AccountsDisplay({ accounts, userId, onBalanceUpdate }: A
                                 </Box>
 
                                 <Box>
-                                    <Typography 
-                                        sx={{ 
-                                            color: account.isPending 
-                                                ? COLORS.state.warning 
-                                                : account.isActive 
-                                                    ? COLORS.state.success 
-                                                    : COLORS.state.error, 
-                                            fontSize: '0.875rem', 
-                                            fontWeight: 500 
+                                    <Typography
+                                        sx={{
+                                            color: account.isPending
+                                                ? COLORS.state.warning
+                                                : account.isActive
+                                                    ? COLORS.state.success
+                                                    : COLORS.state.error,
+                                            fontSize: '0.875rem',
+                                            fontWeight: 500
                                         }}
                                     >
-                                        {account.isPending 
-                                            ? '● Pendiente de Aprobación' 
-                                            : account.isActive 
-                                                ? '● Activa' 
-                                                : account.isUnlockRequest 
-                                                    ? '● Desbloqueo Solicitado' 
+                                        {account.isPending
+                                            ? '● Pendiente de Aprobación'
+                                            : account.isActive
+                                                ? '● Activa'
+                                                : account.isUnlockRequest
+                                                    ? '● Desbloqueo Solicitado'
                                                     : '● Inactiva'}
                                     </Typography>
                                 </Box>
@@ -197,6 +198,8 @@ export default function AccountsDisplay({ accounts, userId, onBalanceUpdate }: A
                                                     backgroundColor: COLORS.state.success,
                                                     color: COLORS.text.light,
                                                     fontWeight: 600,
+                                                    fontSize: { xs: '0.6rem', sm: '0.6rem', md: '0.7rem' },
+                                                    padding: { xs: '4px', sm: '6px', md: '10px' },
                                                     '&:hover': {
                                                         backgroundColor: COLORS.state.successHover,
                                                     },
@@ -218,6 +221,8 @@ export default function AccountsDisplay({ accounts, userId, onBalanceUpdate }: A
                                                         backgroundColor: COLORS.state.error,
                                                         color: COLORS.text.light,
                                                         fontWeight: 600,
+                                                        fontSize: { xs: '0.6rem', sm: '0.6rem', md: '0.7rem' },
+                                                        padding: { xs: '4px', sm: '6px', md: '10px' },
                                                         '&:hover': {
                                                             backgroundColor: COLORS.state.errorHover,
                                                         },
@@ -234,6 +239,8 @@ export default function AccountsDisplay({ accounts, userId, onBalanceUpdate }: A
                                                         backgroundColor: COLORS.button.primary.background,
                                                         color: COLORS.text.light,
                                                         fontWeight: 600,
+                                                        fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.7rem' },
+                                                        padding: { xs: '4px', sm: '6px', md: '10px' },
                                                         opacity: 0.7,
                                                     }}
                                                 >
@@ -249,6 +256,8 @@ export default function AccountsDisplay({ accounts, userId, onBalanceUpdate }: A
                                                         backgroundColor: COLORS.state.success,
                                                         color: COLORS.text.light,
                                                         fontWeight: 600,
+                                                        fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.7rem' },
+                                                        padding: { xs: '4px', sm: '6px', md: '10px' },
                                                         '&:hover': {
                                                             backgroundColor: COLORS.state.successHover,
                                                         },
@@ -270,6 +279,8 @@ export default function AccountsDisplay({ accounts, userId, onBalanceUpdate }: A
                                                 color: COLORS.text.light,
                                                 borderColor: COLORS.text.light,
                                                 fontWeight: 600,
+                                                fontSize: { xs: '0.6rem', sm: '0.6rem', md: '0.7rem' },
+                                                padding: { xs: '4px', sm: '6px', md: '10px' },
                                                 '&:hover': {
                                                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
                                                     borderColor: COLORS.text.light,
@@ -294,6 +305,48 @@ export default function AccountsDisplay({ accounts, userId, onBalanceUpdate }: A
                     </Grid>
                 ))}
             </Grid>
+            
+            {/* Test Account Numbers */}
+            {accounts.length > 0 && (
+                <Alert severity="info" sx={{ mt: 4, borderRadius: 2 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+                        💡 Números de cuenta de prueba para transferencias:
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection:{ xs: 'column', sm: 'row' }, gap: 2, flexWrap: 'wrap' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                                0159497042319579
+                            </Typography>
+                            <IconButton
+                                size="small"
+                                onClick={() => {
+                                    navigator.clipboard.writeText('0159497042319579');
+                                    toast.success('Número de cuenta copiado');
+                                }}
+                                sx={{ p: 0.5 }}
+                            >
+                                <ContentCopyIcon sx={{ fontSize: '0.875rem' }} />
+                            </IconButton>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                                0159374243994117
+                            </Typography>
+                            <IconButton
+                                size="small"
+                                onClick={() => {
+                                    navigator.clipboard.writeText('0159374243994117');
+                                    toast.success('Número de cuenta copiado');
+                                }}
+                                sx={{ p: 0.5 }}
+                            >
+                                <ContentCopyIcon sx={{ fontSize: '0.875rem' }} />
+                            </IconButton>
+                        </Box>
+                    </Box>
+                </Alert>
+            )}
+            
             <ConfirmDialog
                 open={openConfirmDialog}
                 title="Confirmar Bloqueo"

@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, CircularProgress } from '@mui/material';
+import { Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, CircularProgress, IconButton, Alert } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { COLORS } from '@/constants/colors';
 import { Account } from '@/services/account/account-service';
 import { transactionService } from '@/services/transaction/transaction-service';
@@ -83,10 +85,42 @@ export default function TransferModal({ open, account, onClose, onSuccess }: Tra
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ backgroundColor: COLORS.background.card, color: COLORS.text.dark }}>
+      <DialogTitle sx={{ backgroundColor: COLORS.background.card, color: COLORS.text.dark, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         Realizar Transferencia
+        <IconButton onClick={handleClose} size="small" sx={{ color: COLORS.text.dark }}>
+          <CloseIcon />
+        </IconButton>
       </DialogTitle>
       <DialogContent sx={{ backgroundColor: COLORS.background.card, pt: 3 }}>
+        {/* Test Account Numbers */}
+        <Alert severity="info" sx={{ mb: 3, borderRadius: 2 }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+            ¿Necesitas un número de cuenta?
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+              Prueba con: 0159374243994117
+            </Typography>
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<ContentCopyIcon sx={{ fontSize: '0.875rem' }} />}
+              onClick={() => {
+                navigator.clipboard.writeText('0159374243994117');
+                toast.success('Número de cuenta copiado');
+              }}
+              sx={{
+                fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                py: 0.5,
+                px: 1,
+                textTransform: 'none',
+              }}
+            >
+              Copiar
+            </Button>
+          </Box>
+        </Alert>
+        
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Box>
             <Typography sx={{ color: COLORS.text.dark, mb: 1, fontSize: '0.875rem' }}>

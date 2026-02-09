@@ -19,6 +19,7 @@ export interface DataTableColumn<T> {
   width?: string | number;
   headerSx?: any;
   cellSx?: any;
+  hideOnMobile?: boolean;
 }
 
 interface DataTableProps<T> {
@@ -73,6 +74,7 @@ export default function DataTable<T>({
                   color: COLORS.text.light,
                   fontWeight: 'bold',
                   width: column.width,
+                  display: column.hideOnMobile ? { xs: 'none', sm: 'table-cell' } : 'table-cell',
                   ...column.headerSx,
                 }}
               >
@@ -109,6 +111,7 @@ export default function DataTable<T>({
                     align={column.align || 'left'}
                     sx={{
                       color: COLORS.text.light,
+                      display: column.hideOnMobile ? { xs: 'none', sm: 'table-cell' } : 'table-cell',
                       ...column.cellSx,
                     }}
                   >

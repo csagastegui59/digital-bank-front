@@ -13,7 +13,9 @@ import {
   FormControlLabel,
   Radio,
   CircularProgress,
+  IconButton,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { COLORS } from '@/constants/colors';
 import { Currency, accountService } from '@/services/account/account-service';
 import { toast } from 'react-toastify';
@@ -88,9 +90,15 @@ export default function RequestAccountModal({
           color: COLORS.text.light,
           fontWeight: 'bold',
           borderBottom: `1px solid ${COLORS.border.card}`,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
         }}
       >
         Solicitar Nueva Cuenta
+        <IconButton onClick={handleClose} size="small" sx={{ color: COLORS.text.light }}>
+          <CloseIcon />
+        </IconButton>
       </DialogTitle>
       <DialogContent sx={{ mt: 3 }}>
         <Typography sx={{ color: COLORS.text.light, mb: 3 }}>

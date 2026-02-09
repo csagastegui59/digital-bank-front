@@ -16,7 +16,9 @@ import {
   Tooltip,
   Alert,
   Typography,
+  IconButton,
 } from '@mui/material';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { COLORS } from '@/constants/colors';
 import { authService, ApiError } from '@/services/auth/auth-service';
 
@@ -230,6 +232,31 @@ export default function LoginForm() {
               priority
             />
           </Box>
+          
+          {/* Credentials Hint for Testing */}
+          {isLogin && (
+            <Alert severity="info" sx={{ borderRadius: 2, mb: 2 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                🔐 Credenciales de prueba:
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                  admin@example.com / password123
+                </Typography>
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    navigator.clipboard.writeText('admin@example.com');
+                    toast.success('Email copiado');
+                  }}
+                  sx={{ p: 0.5 }}
+                >
+                  <ContentCopyIcon sx={{ fontSize: '0.875rem' }} />
+                </IconButton>
+              </Box>
+            </Alert>
+          )}
+
           <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {/* Rate Limit Alert */}
             {!isLogin && !canSignup && (
@@ -420,7 +447,12 @@ export default function LoginForm() {
                   }}
                 >
                   {loading ? (
-                    <CircularProgress size={24} sx={{ color: COLORS.button.primary.text }} />
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                      <CircularProgress size={24} sx={{ color: COLORS.button.primary.text }} />
+                      <Typography sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, color: COLORS.button.primary.text, textAlign: 'center' }}>
+                        Encendiendo servidor, la primera carga puede tardar unos segundos...
+                      </Typography>
+                    </Box>
                   ) : (
                     isLogin ? 'Iniciar Sesión' : canSignup ? 'Registrarse' : `Espera ${formatTime(remainingSeconds)}`
                   )}
@@ -428,6 +460,28 @@ export default function LoginForm() {
               </span>
             </Tooltip>
           </Box>
+          
+          {/* Documentation Link */}
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Typography variant="body2" sx={{ color: COLORS.text.light, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+              ¿Necesitas ayuda? {' '}
+              <Link
+                href="https://github.com/csagastegui59/digital-bank-front"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  color: COLORS.text.dark,
+                  textDecoration: 'none',
+                  '&:hover': {
+                    textDecoration: 'underline',
+                  },
+                }}
+              >
+                Revisa nuestra documentación
+              </Link>
+            </Typography>
+          </Box>
+          
           <Box sx={{ mt: 3, textAlign: 'center' }}>
             <Link
               component="button"

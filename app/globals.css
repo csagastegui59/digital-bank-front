@@ -1,17 +1,8 @@
-@import "tailwindcss";
-
 :root {
   --primary-blue: #4287f5;
   --dark-blue: #01267d;
   --dark-text: #0d0d0d;
   --light-text: #f7fbfc;
-}
-
-@theme inline {
-  --color-primary: var(--primary-blue);
-  --color-primary-dark: var(--dark-blue);
-  --color-dark-text: var(--dark-text);
-  --color-light-text: var(--light-text);
 }
 
 * {

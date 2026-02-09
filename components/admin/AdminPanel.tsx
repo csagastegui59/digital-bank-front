@@ -51,7 +51,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
   const [openActivateDialog, setOpenActivateDialog] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'pending' | 'unlock-requests' | 'blocked' | 'transactions'>('pending');
-  
+
   // Pagination states
   const [blockedPage, setBlockedPage] = useState(1);
   const [blockedTotalPages, setBlockedTotalPages] = useState(0);
@@ -64,7 +64,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
   const [pendingTotal, setPendingTotal] = useState(0);
   const [searchPage, setSearchPage] = useState(1);
   const [searchTotalPages, setSearchTotalPages] = useState(0);
-  
+
   // Transaction states
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [currencyTab, setCurrencyTab] = useState<'PEN' | 'USD'>('PEN');
@@ -201,7 +201,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
     if (isSearchActive) {
       return searchResults;
     }
-    
+
     switch (activeTab) {
       case 'pending':
         return pendingAccounts;
@@ -308,8 +308,8 @@ export default function AdminPanel({ user }: AdminPanelProps) {
     setTransactionsPage(page);
     try {
       const response = await transactionService.searchTransactions(
-        { currency: currencyTab }, 
-        accessToken, 
+        { currency: currencyTab },
+        accessToken,
         page
       );
       setTransactions(response.data);
@@ -361,7 +361,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
     } else if (isSearchActive) {
       return searchTotalPages;
     }
-    
+
     switch (activeTab) {
       case 'pending':
         return pendingTotalPages;
@@ -380,7 +380,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
     } else if (isSearchActive) {
       return searchPage;
     }
-    
+
     switch (activeTab) {
       case 'pending':
         return pendingPage;
@@ -430,10 +430,12 @@ export default function AdminPanel({ user }: AdminPanelProps) {
     {
       header: 'Email',
       key: 'owner.email',
+      hideOnMobile: true,
     },
     {
       header: 'Moneda',
       key: 'currency',
+      hideOnMobile: true,
     },
     {
       header: 'Saldo',
@@ -442,6 +444,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
           {account.currency === 'USD' ? '$' : 'S/.'} {parseFloat(account.balance).toFixed(2)}
         </span>
       ),
+      hideOnMobile: true,
     },
     {
       header: 'Estado',
@@ -455,6 +458,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
           }}
         />
       ),
+      hideOnMobile: true,
     },
     {
       header: 'Acciones',
@@ -514,10 +518,12 @@ export default function AdminPanel({ user }: AdminPanelProps) {
     {
       header: 'Email',
       key: 'owner.email',
+      hideOnMobile: true,
     },
     {
       header: 'Moneda',
       key: 'currency',
+      hideOnMobile: true,
     },
     {
       header: 'Saldo',
@@ -526,6 +532,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
           {account.currency === 'USD' ? '$' : 'S/.'} {parseFloat(account.balance).toFixed(2)}
         </span>
       ),
+      hideOnMobile: true,
     },
     {
       header: 'Estado',
@@ -539,6 +546,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
           }}
         />
       ),
+      hideOnMobile: true,
     },
     {
       header: 'Bloqueada',
@@ -553,6 +561,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
           }) : '-'}
         </span>
       ),
+      hideOnMobile: true,
     },
     {
       header: 'Solicitud',
@@ -567,6 +576,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
           }) : '-'}
         </span>
       ),
+      hideOnMobile: true,
     },
     {
       header: 'Acciones',
@@ -622,6 +632,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
           {tx.id.substring(0, 8)}...
         </span>
       ),
+      hideOnMobile: true,
     },
     {
       header: 'Tipo',
@@ -635,6 +646,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
           }}
         />
       ),
+      hideOnMobile: true,
     },
     {
       header: 'Cuenta Origen',
@@ -675,6 +687,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
     {
       header: 'Tasa de Cambio',
       render: (tx) => tx.exchangeRate ? parseFloat(tx.exchangeRate).toFixed(4) : '-',
+      hideOnMobile: true,
     },
     {
       header: 'Estado',
@@ -683,12 +696,13 @@ export default function AdminPanel({ user }: AdminPanelProps) {
           label={tx.status}
           size="small"
           sx={{
-            backgroundColor: tx.status === 'POSTED' ? COLORS.state.success : 
-                            tx.status === 'PENDING' ? COLORS.state.warning : COLORS.state.error,
+            backgroundColor: tx.status === 'POSTED' ? COLORS.state.success :
+              tx.status === 'PENDING' ? COLORS.state.warning : COLORS.state.error,
             color: COLORS.text.light,
           }}
         />
       ),
+      hideOnMobile: true,
     },
     {
       header: 'Fecha',
@@ -709,6 +723,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
       render: (tx) => (
         <span style={{ fontSize: '0.875rem' }}>{tx.description || '-'}</span>
       ),
+      hideOnMobile: true,
     },
   ];
 
@@ -752,64 +767,6 @@ export default function AdminPanel({ user }: AdminPanelProps) {
             Bienvenido, {user.firstname} {user.lastname}
           </Typography>
         </Box>
-
-        {/* Search Card - Only show when NOT in transactions tab */}
-        {activeTab !== 'transactions' && (
-          <Card
-            elevation={24}
-            sx={{
-              backgroundColor: COLORS.background.card,
-              backdropFilter: 'blur(20px)',
-              borderRadius: 4,
-              p: 4,
-              border: `1px solid ${COLORS.border.card}`,
-              mb: 4,
-            }}
-          >
-            <Typography variant="h5" sx={{ color: COLORS.text.light, mb: 3, fontWeight: 'bold' }}>
-              Buscar Cuentas
-            </Typography>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <TextField
-              fullWidth
-              placeholder="Buscar por ID de cuenta, ID de usuario o número de cuenta"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleSearch(1);
-                }
-              }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  color: COLORS.text.light,
-                  '& fieldset': {
-                    borderColor: COLORS.border.card,
-                  },
-                  '&:hover fieldset': {
-                    borderColor: COLORS.button.primary.background,
-                  },
-                },
-              }}
-            />
-            <Button
-              variant="contained"
-              onClick={() => handleSearch(1)}
-              disabled={searching}
-              sx={{
-                backgroundColor: COLORS.state.success,
-                color: COLORS.text.light,
-                minWidth: 120,
-                '&:hover': {
-                  backgroundColor: COLORS.state.successHover,
-                },
-              }}
-            >
-              {searching ? <CircularProgress size={24} sx={{ color: COLORS.text.light }} /> : 'Buscar'}
-            </Button>
-          </Box>
-        </Card>
-        )}
 
         {/* Tabs for filtering */}
         <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -874,7 +831,65 @@ export default function AdminPanel({ user }: AdminPanelProps) {
             Transacciones
           </Button>
         </Box>
-
+        {/* Search Card - Only show when NOT in transactions tab */}
+        {activeTab !== 'transactions' && (
+          <Card
+            elevation={24}
+            sx={{
+              backgroundColor: COLORS.background.card,
+              backdropFilter: 'blur(20px)',
+              borderRadius: 4,
+              p: 4,
+              border: `1px solid ${COLORS.border.card}`,
+              mb: 4,
+            }}
+          >
+            <Typography variant="h5" sx={{ color: COLORS.text.light, mb: 3, fontWeight: 'bold' }}>
+              Buscar Cuentas
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField
+                fullWidth
+                placeholder="Buscar por ID de cuenta, ID de usuario o número de cuenta"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch(1);
+                  }
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    color: COLORS.text.light,
+                    '& fieldset': {
+                      borderColor: COLORS.border.card,
+                    },
+                    '&:hover fieldset': {
+                      borderColor: COLORS.button.primary.background,
+                    },
+                  },
+                }}
+              />
+              <Button
+                variant="contained"
+                onClick={() => handleSearch(1)}
+                disabled={searching}
+                sx={{
+                  backgroundColor: COLORS.state.success,
+                  color: COLORS.text.light,
+                  minWidth: {sm: '40px', md: '100px'},
+                  padding: { xs: '8px', md: '8px 16px' },
+                  fontSize: { xs: '0.7rem', md: '1rem' },
+                  '&:hover': {
+                    backgroundColor: COLORS.state.successHover,
+                  },
+                }}
+              >
+                {searching ? <CircularProgress size={24} sx={{ color: COLORS.text.light }} /> : 'Buscar'}
+              </Button>
+            </Box>
+          </Card>
+        )}
         {/* Currency Tabs - Only show when transactions tab is active */}
         {activeTab === 'transactions' && (
           <Box sx={{ mb: 3, display: 'flex', gap: 2 }}>
@@ -1041,7 +1056,7 @@ export default function AdminPanel({ user }: AdminPanelProps) {
           ) : (
             <>
               {renderTransactionsTable(
-                getTransactionsToDisplay(), 
+                getTransactionsToDisplay(),
                 `Transacciones ${currencyTab} (${currencyTab === 'PEN' ? 'Soles' : 'Dólares'})`
               )}
             </>

@@ -18,7 +18,9 @@ import {
   TableRow,
   Paper,
   Chip,
+  IconButton,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { COLORS } from '@/constants/colors';
 import { Account } from '@/services/account/account-service';
 import { transactionService, Transaction } from '@/services/transaction/transaction-service';
@@ -119,9 +121,15 @@ export default function TransactionsHistoryModal({
           color: COLORS.text.light,
           fontWeight: 'bold',
           borderBottom: `1px solid ${COLORS.border.card}`,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
         }}
       >
         Historial de Transacciones
+        <IconButton onClick={onClose} size="small" sx={{ color: COLORS.text.light }}>
+          <CloseIcon />
+        </IconButton>
       </DialogTitle>
       <DialogContent sx={{ mt: 2 }}>
         {account && (
@@ -159,10 +167,10 @@ export default function TransactionsHistoryModal({
                   <TableCell sx={{ color: COLORS.text.light, fontWeight: 'bold', backgroundColor: COLORS.primary.dark }}>
                     Fecha
                   </TableCell>
-                  <TableCell sx={{ color: COLORS.text.light, fontWeight: 'bold', backgroundColor: COLORS.primary.dark }}>
+                  <TableCell sx={{ color: COLORS.text.light, fontWeight: 'bold', backgroundColor: COLORS.primary.dark, display: { xs: 'none', sm: 'table-cell' } }}>
                     Tipo
                   </TableCell>
-                  <TableCell sx={{ color: COLORS.text.light, fontWeight: 'bold', backgroundColor: COLORS.primary.dark }}>
+                  <TableCell sx={{ color: COLORS.text.light, fontWeight: 'bold', backgroundColor: COLORS.primary.dark, display: { xs: 'none', sm: 'table-cell' } }}>
                     Descripción
                   </TableCell>
                   <TableCell align="right" sx={{ color: COLORS.text.light, fontWeight: 'bold', backgroundColor: COLORS.primary.dark }}>
@@ -177,7 +185,7 @@ export default function TransactionsHistoryModal({
                     <TableCell sx={{ color: COLORS.text.light, fontSize: '0.875rem' }}>
                       {formatDate(transaction.createdAt)}
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
                       <Chip
                         label={getTransactionType(transaction)}
                         size="small"
@@ -188,7 +196,7 @@ export default function TransactionsHistoryModal({
                         }}
                       />
                     </TableCell>
-                    <TableCell sx={{ color: COLORS.text.light, fontSize: '0.875rem' }}>
+                    <TableCell sx={{ color: COLORS.text.light, fontSize: '0.875rem', display: { xs: 'none', sm: 'table-cell' } }}>
                       {transaction.description || '-'}
                     </TableCell>
                     <TableCell
