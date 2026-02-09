@@ -6,6 +6,9 @@ Digital Bank es una aplicación web de banca digital donde los usuarios pueden:
 - Gestionar cuentas
 - Y los administradores pueden aprobar solicitudes.
 
+## Acceder a la aplicación
+Puedes encontrar la versión de la aplicación en el siguiente link: https://digital-bank-front-two.vercel.app/
+
 ## Iniciar sesión
 Al ingresar a la aplicación, veremos una pantalla como la mostrada en la imagen, podemos ingresar con la cuenta de administrador por defecto o crear una nueva
 
