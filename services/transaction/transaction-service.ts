@@ -1,4 +1,10 @@
 const API_URL = 'https://digital-bank-0efq.onrender.com';
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
 
 export interface TransferRequest {
   fromAccountId: string;
@@ -18,6 +24,37 @@ export interface Transaction {
   status: string;
   description: string;
   createdAt: Date;
+  account?: {
+    id: string;
+    accountNumber: string;
+    currency: string;
+    owner?: {
+      id: string;
+      firstname: string;
+      lastname: string;
+      email: string;
+    };
+  };
+  destinationAccount?: {
+    id: string;
+    accountNumber: string;
+    currency: string;
+    owner?: {
+      id: string;
+      firstname: string;
+      lastname: string;
+      email: string;
+    };
+  };
+}
+
+export interface TransactionFilters {
+  transactionId?: string;
+  accountId?: string;
+  userId?: string;
+  minAmount?: string;
+  maxAmount?: string;
+  currency?: 'PEN' | 'USD';
 }
 
 const getAccessToken = () => {
@@ -60,6 +97,49 @@ export const transactionService = {
 
     if (!response.ok) {
       throw new Error('Error al obtener transacciones');
+    }
+
+    return response.json();
+  },
+
+  async getAllTransactions(accessToken: string): Promise<Transaction[]> {
+    const response = await fetch(`${API_URL}/transactions`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al obtener transacciones');
+    }
+
+    return response.json();
+  },
+
+  async searchTransactions(filters: TransactionFilters, accessToken: string, page: number = 1, limit: number = 10): Promise<PaginatedResponse<Transaction>> {
+    const params = new URLSearchParams();
+    
+    if (filters.transactionId) params.append('transactionId', filters.transactionId);
+    if (filters.accountId) params.append('accountId', filters.accountId);
+    if (filters.userId) params.append('userId', filters.userId);
+    if (filters.minAmount) params.append('minAmount', filters.minAmount);
+    if (filters.maxAmount) params.append('maxAmount', filters.maxAmount);
+    if (filters.currency) params.append('currency', filters.currency);
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+
+    const response = await fetch(`${API_URL}/transactions/search?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al buscar transacciones');
     }
 
     return response.json();

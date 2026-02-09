@@ -1,28 +1,11 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
-import { Box, Container, Typography, Button, Card } from '@mui/material';
+import { useState } from 'react';
+import { Box, Container, Typography, Card, Button } from '@mui/material';
 import { COLORS } from '@/constants/colors';
-import { authService } from '@/services/auth/auth-service';
-import { Account } from '@/services/account/account-service';
+import { Account, Currency } from '@/services/account/account-service';
 import AccountsDisplay from '@/components/accounts/AccountsDisplay';
-
-// Helper para obtener token de cookies
-const getAccessToken = () => {
-  if (typeof window === 'undefined') return null;
-  const match = document.cookie.match(new RegExp('(^| )access_token=([^;]+)'));
-  return match ? match[2] : null;
-};
-
-// Helper para limpiar cookies
-const clearCookies = () => {
-  if (typeof window === 'undefined') return;
-  document.cookie = 'access_token=; path=/; max-age=0';
-  document.cookie = 'refresh_token=; path=/; max-age=0';
-  document.cookie = 'user=; path=/; max-age=0';
-};
+import RequestAccountModal from '@/components/accounts/RequestAccountModal';
 
 interface DashboardClientProps {
   user: {
@@ -37,25 +20,23 @@ interface DashboardClientProps {
 }
 
 export default function DashboardClient({ user, accounts }: DashboardClientProps) {
-  const router = useRouter();
+  const [openRequestModal, setOpenRequestModal] = useState(false);
 
-  const handleLogout = async () => {
-    const accessToken = getAccessToken();
+  const getAvailableCurrencies = (): Currency[] => {
+    // Obtener todas las monedas que el usuario ya tiene (activas, pendientes o bloqueadas)
+    const existingCurrencies = accounts.map(acc => acc.currency);
     
-    if (accessToken) {
-      try {
-        await authService.logout(accessToken);
-        toast.success('Sesión cerrada correctamente');
-      } catch (error) {
-        toast.warning('Sesión cerrada localmente');
-      }
-    }
+    const allCurrencies = [Currency.USD, Currency.PEN];
+    return allCurrencies.filter(currency => !existingCurrencies.includes(currency));
+  };
 
-    clearCookies();
-    
+  const availableCurrencies = getAvailableCurrencies();
+  const canRequestAccount = user.role === 'CUSTOMER' && availableCurrencies.length > 0;
+
+  const handleRequestSuccess = () => {
     setTimeout(() => {
-      router.push('/');
-    }, 500);
+      window.location.reload();
+    }, 1500);
   };
 
   return (
@@ -67,49 +48,26 @@ export default function DashboardClient({ user, accounts }: DashboardClientProps
       }}
     >
       <Container maxWidth="lg">
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            mb: 4,
-          }}
-        >
-          <Box>
-            <Typography
-              variant="h4"
-              sx={{
-                color: COLORS.text.light,
-                fontWeight: 'bold',
-              }}
-            >
-              ¡Hola, {user.firstname}!
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                color: COLORS.text.light,
-                opacity: 0.8,
-                mt: 0.5,
-              }}
-            >
-              Bienvenido a tu Digital Bank
-            </Typography>
-          </Box>
-          <Button
-            variant="outlined"
-            onClick={handleLogout}
+        <Box sx={{ mb: 4 }}>
+          <Typography
+            variant="h4"
             sx={{
               color: COLORS.text.light,
-              borderColor: COLORS.text.light,
-              '&:hover': {
-                borderColor: COLORS.button.primary.background,
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              },
+              fontWeight: 'bold',
             }}
           >
-            Cerrar Sesión
-          </Button>
+            ¡Hola, {user.firstname}!
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: COLORS.text.light,
+              opacity: 0.8,
+              mt: 0.5,
+            }}
+          >
+            Bienvenido a tu Digital Bank
+          </Typography>
         </Box>
 
         {/* User Info Card */}
@@ -160,18 +118,45 @@ export default function DashboardClient({ user, accounts }: DashboardClientProps
             border: `1px solid ${COLORS.border.card}`,
           }}
         >
-          <Typography variant="h5" sx={{ color: COLORS.text.light, mb: 3, fontWeight: 'bold' }}>
-            Mis Cuentas
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Typography variant="h5" sx={{ color: COLORS.text.light, fontWeight: 'bold' }}>
+              Mis Cuentas
+            </Typography>
+            
+            {canRequestAccount && (
+              <Button
+                variant="contained"
+                onClick={() => setOpenRequestModal(true)}
+                sx={{
+                  backgroundColor: COLORS.state.success,
+                  color: COLORS.text.light,
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  '&:hover': {
+                    backgroundColor: COLORS.state.successHover,
+                  },
+                }}
+              >
+                Solicitar Nueva Cuenta
+              </Button>
+            )}
+          </Box>
           
           {accounts.length === 0 ? (
             <Typography sx={{ color: COLORS.text.light, opacity: 0.7 }}>
               No tienes cuentas registradas
             </Typography>
           ) : (
-            <AccountsDisplay accounts={accounts} />
+            <AccountsDisplay accounts={accounts} userId={user.id} />
           )}
         </Card>
+
+        <RequestAccountModal
+          open={openRequestModal}
+          availableCurrencies={availableCurrencies}
+          onClose={() => setOpenRequestModal(false)}
+          onSuccess={handleRequestSuccess}
+        />
       </Container>
     </Box>
   );

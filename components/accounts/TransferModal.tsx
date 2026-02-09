@@ -30,13 +30,11 @@ export default function TransferModal({ open, account, onClose, onSuccess }: Tra
   const handleTransfer = async () => {
     if (!account) return;
 
-    // Validar que la cuenta esté activa
     if (!account.isActive) {
       toast.error('No puedes enviar fondos desde una cuenta bloqueada. Solicita un desbloqueo.');
       return;
     }
 
-    // Validaciones
     if (!destinationAccountNumber.trim()) {
       toast.error('Ingresa el número de cuenta destino');
       return;

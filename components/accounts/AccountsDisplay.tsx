@@ -6,16 +6,19 @@ import { COLORS } from '@/constants/colors';
 import { Account } from '@/services/account/account-service';
 import { toast } from 'react-toastify';
 import TransferModal from './TransferModal';
+import TransactionsHistoryModal from './TransactionsHistoryModal';
 import { accountBlockService } from '@/services/account/account-block-service';
 import ConfirmDialog from '../common/ConfirmDialog';
 
 interface AccountsDisplayProps {
     accounts: Account[];
+    userId: string;
     onBalanceUpdate?: () => void;
 }
 
-export default function AccountsDisplay({ accounts, onBalanceUpdate }: AccountsDisplayProps) {
+export default function AccountsDisplay({ accounts, userId, onBalanceUpdate }: AccountsDisplayProps) {
     const [openTransferModal, setOpenTransferModal] = useState(false);
+    const [openTransactionsModal, setOpenTransactionsModal] = useState(false);
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
     const [isRequestingUnblock, setIsRequestingUnblock] = useState(false);
@@ -34,6 +37,16 @@ export default function AccountsDisplay({ accounts, onBalanceUpdate }: AccountsD
         setTimeout(() => {
             window.location.reload();
         }, 1000);
+    };
+
+    const handleOpenTransactions = (account: Account) => {
+        setSelectedAccount(account);
+        setOpenTransactionsModal(true);
+    };
+
+    const handleCloseTransactions = () => {
+        setOpenTransactionsModal(false);
+        setSelectedAccount(null);
     };
 
     const getAccessToken = () => {
@@ -77,8 +90,7 @@ export default function AccountsDisplay({ accounts, onBalanceUpdate }: AccountsD
     };
 
     const handleRequestUnblock = async (account: Account) => {
-        if (isRequestingUnblock) return; // Prevenir múltiples clics
-        
+        if (isRequestingUnblock) return;
         const accessToken = getAccessToken();
         if (!accessToken) {
             toast.error('No estás autenticado');
@@ -151,86 +163,132 @@ export default function AccountsDisplay({ accounts, onBalanceUpdate }: AccountsD
                                 </Box>
 
                                 <Box>
-                                    <Typography sx={{ color: account.isActive ? COLORS.state.success : COLORS.state.error, fontSize: '0.875rem', fontWeight: 500 }}>
-                                        {account.isActive ? '● Activa' : account.isUnlockRequest ? '● Desbloqueo Solicitado' : '● Inactiva'}
+                                    <Typography 
+                                        sx={{ 
+                                            color: account.isPending 
+                                                ? COLORS.state.warning 
+                                                : account.isActive 
+                                                    ? COLORS.state.success 
+                                                    : COLORS.state.error, 
+                                            fontSize: '0.875rem', 
+                                            fontWeight: 500 
+                                        }}
+                                    >
+                                        {account.isPending 
+                                            ? '● Pendiente de Aprobación' 
+                                            : account.isActive 
+                                                ? '● Activa' 
+                                                : account.isUnlockRequest 
+                                                    ? '● Desbloqueo Solicitado' 
+                                                    : '● Inactiva'}
                                     </Typography>
                                 </Box>
 
                                 {/* Action Buttons */}
-                                <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                                    <Button
-                                        fullWidth
-                                        variant="contained"
-                                        disabled={!account.isActive}
-                                        onClick={() => handleOpenTransfer(account)}
-                                        sx={{
-                                            backgroundColor: COLORS.state.success,
-                                            color: COLORS.text.light,
-                                            fontWeight: 600,
-                                            '&:hover': {
-                                                backgroundColor: COLORS.state.successHover,
-                                            },
-                                            '&:disabled': {
-                                                backgroundColor: COLORS.button.primary.background,
-                                                opacity: 0.5,
-                                            },
-                                        }}
-                                    >
-                                        Transferir
-                                    </Button>
+                                {!account.isPending && (
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+                                        <Box sx={{ display: 'flex', gap: 2 }}>
+                                            <Button
+                                                fullWidth
+                                                variant="contained"
+                                                disabled={!account.isActive}
+                                                onClick={() => handleOpenTransfer(account)}
+                                                sx={{
+                                                    backgroundColor: COLORS.state.success,
+                                                    color: COLORS.text.light,
+                                                    fontWeight: 600,
+                                                    '&:hover': {
+                                                        backgroundColor: COLORS.state.successHover,
+                                                    },
+                                                    '&:disabled': {
+                                                        backgroundColor: COLORS.button.primary.background,
+                                                        opacity: 0.5,
+                                                    },
+                                                }}
+                                            >
+                                                Transferir
+                                            </Button>
 
-                                    {account.isActive ? (
+                                            {account.isActive ? (
+                                                <Button
+                                                    fullWidth
+                                                    variant="contained"
+                                                    onClick={() => handleBlockAccount(account)}
+                                                    sx={{
+                                                        backgroundColor: COLORS.state.error,
+                                                        color: COLORS.text.light,
+                                                        fontWeight: 600,
+                                                        '&:hover': {
+                                                            backgroundColor: COLORS.state.errorHover,
+                                                        },
+                                                    }}
+                                                >
+                                                    Bloquear
+                                                </Button>
+                                            ) : account.isUnlockRequest ? (
+                                                <Button
+                                                    fullWidth
+                                                    variant="contained"
+                                                    disabled
+                                                    sx={{
+                                                        backgroundColor: COLORS.button.primary.background,
+                                                        color: COLORS.text.light,
+                                                        fontWeight: 600,
+                                                        opacity: 0.7,
+                                                    }}
+                                                >
+                                                    Desbloqueo Pendiente
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    fullWidth
+                                                    variant="contained"
+                                                    onClick={() => handleRequestUnblock(account)}
+                                                    disabled={isRequestingUnblock}
+                                                    sx={{
+                                                        backgroundColor: COLORS.state.success,
+                                                        color: COLORS.text.light,
+                                                        fontWeight: 600,
+                                                        '&:hover': {
+                                                            backgroundColor: COLORS.state.successHover,
+                                                        },
+                                                        '&:disabled': {
+                                                            opacity: 0.5,
+                                                        },
+                                                    }}
+                                                >
+                                                    {isRequestingUnblock ? 'Procesando...' : 'Solicitar Desbloqueo'}
+                                                </Button>
+                                            )}
+                                        </Box>
+
                                         <Button
                                             fullWidth
-                                            variant="contained"
-                                            onClick={() => handleBlockAccount(account)}
+                                            variant="outlined"
+                                            onClick={() => handleOpenTransactions(account)}
                                             sx={{
-                                                backgroundColor: COLORS.state.error,
                                                 color: COLORS.text.light,
+                                                borderColor: COLORS.text.light,
                                                 fontWeight: 600,
                                                 '&:hover': {
-                                                    backgroundColor: COLORS.state.errorHover,
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                                    borderColor: COLORS.text.light,
                                                 },
                                             }}
                                         >
-                                            Bloquear
+                                            Ver Transacciones
                                         </Button>
-                                    ) : account.isUnlockRequest ? (
-                                        <Button
-                                            fullWidth
-                                            variant="contained"
-                                            disabled
-                                            sx={{
-                                                backgroundColor: COLORS.button.primary.background,
-                                                color: COLORS.text.light,
-                                                fontWeight: 600,
-                                                opacity: 0.7,
-                                            }}
-                                        >
-                                            Desbloqueo Pendiente
-                                        </Button>
-                                    ) : (
-                                        <Button
-                                            fullWidth
-                                            variant="contained"
-                                            onClick={() => handleRequestUnblock(account)}
-                                            disabled={isRequestingUnblock}
-                                            sx={{
-                                                backgroundColor: COLORS.state.success,
-                                                color: COLORS.text.light,
-                                                fontWeight: 600,
-                                                '&:hover': {
-                                                    backgroundColor: COLORS.state.successHover,
-                                                },
-                                                '&:disabled': {
-                                                    opacity: 0.5,
-                                                },
-                                            }}
-                                        >
-                                            {isRequestingUnblock ? 'Procesando...' : 'Solicitar Desbloqueo'}
-                                        </Button>
-                                    )}
-                                </Box>
+                                    </Box>
+                                )}
+
+                                {/* Mensaje para cuentas pendientes */}
+                                {account.isPending && (
+                                    <Box sx={{ mt: 2, p: 2, backgroundColor: COLORS.background.decorative, borderRadius: 2 }}>
+                                        <Typography sx={{ color: COLORS.text.light, fontSize: '0.875rem', opacity: 0.8, textAlign: 'center' }}>
+                                            ⏳ Tu solicitud está siendo revisada por un administrador
+                                        </Typography>
+                                    </Box>
+                                )}
                             </Box>
                         </Card>
                     </Grid>
@@ -250,6 +308,12 @@ export default function AccountsDisplay({ accounts, onBalanceUpdate }: AccountsD
                 account={selectedAccount}
                 onClose={handleCloseTransfer}
                 onSuccess={handleTransferSuccess}
+            />
+            <TransactionsHistoryModal
+                open={openTransactionsModal}
+                account={selectedAccount}
+                userId={userId}
+                onClose={handleCloseTransactions}
             />
         </>
     );
