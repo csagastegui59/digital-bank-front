@@ -1,6 +1,6 @@
 import { ApiError } from '../auth/auth-service';
 
-const API_URL = 'https://digital-bank-0efq.onrender.com';
+const API_URL = 'https://digital-bank-1-zcmv.onrender.com';
 
 export const accountBlockService = {
   blockAccount: async (accountId: string, accessToken: string) => {

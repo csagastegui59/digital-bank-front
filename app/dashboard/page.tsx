@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import DashboardClient from './DashboardClient';
 
-const API_URL = 'https://digital-bank-0efq.onrender.com';
+const API_URL = 'https://digital-bank-1-zcmv.onrender.com';
 
 export default async function DashboardPage() {
   // Obtener cookies directamente

@@ -1,4 +1,4 @@
-const API_URL = 'https://digital-bank-0efq.onrender.com';
+const API_URL = 'https://digital-bank-1-zcmv.onrender.com';
 
 export interface SignupRequest {
   firstname: string;
