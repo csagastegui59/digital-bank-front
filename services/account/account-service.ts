@@ -88,5 +88,28 @@ export const accountService = {
             }
             throw new ApiError(500, 'Error de conexión con el servidor');
         }
+    },
+
+    async getActiveAccountByCurrency(currency: string, accessToken: string): Promise<{ accountNumber: string }> {
+        try {
+            const response = await fetch(`${API_URL}/accounts/active/by-currency?currency=${currency}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new ApiError(response.status, 'Error al obtener cuenta de ejemplo');
+            }
+
+            return response.json();
+        } catch (error) {
+            if (error instanceof ApiError) {
+                throw error;
+            }
+            throw new ApiError(500, 'Error de conexión con el servidor');
+        }
     }
 }

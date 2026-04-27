@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, CircularProgress, IconButton, Alert } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { COLORS } from '@/constants/colors';
 import { Account } from '@/services/account/account-service';
+import { accountService } from '@/services/account/account-service';
 import { transactionService } from '@/services/transaction/transaction-service';
 import { toast } from 'react-toastify';
 
@@ -21,6 +22,23 @@ export default function TransferModal({ open, account, onClose, onSuccess }: Tra
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
+  const [exampleAccountNumber, setExampleAccountNumber] = useState<string | null>(null);
+
+  const getAccessToken = () => {
+    if (typeof window === 'undefined') return null;
+    const match = document.cookie.match(new RegExp('(^| )access_token=([^;]+)'));
+    return match ? match[2] : null;
+  };
+
+  useEffect(() => {
+    if (!open || !account) return;
+    const token = getAccessToken();
+    if (!token) return;
+    setExampleAccountNumber(null);
+    accountService.getActiveAccountByCurrency(account.currency, token)
+      .then((res) => setExampleAccountNumber(res.accountNumber))
+      .catch(() => {});
+  }, [open, account]);
 
   const handleClose = () => {
     setDestinationAccountNumber('');
@@ -93,33 +111,35 @@ export default function TransferModal({ open, account, onClose, onSuccess }: Tra
       </DialogTitle>
       <DialogContent sx={{ backgroundColor: COLORS.background.card, pt: 3 }}>
         {/* Test Account Numbers */}
-        <Alert severity="info" sx={{ mb: 3, borderRadius: 2 }}>
-          <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-            ¿Necesitas un número de cuenta?
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
-              Prueba con: 0159374243994117
+        {exampleAccountNumber && (
+          <Alert severity="info" sx={{ mb: 3, borderRadius: 2 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+              ¿Necesitas un número de cuenta?
             </Typography>
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<ContentCopyIcon sx={{ fontSize: '0.875rem' }} />}
-              onClick={() => {
-                navigator.clipboard.writeText('0159374243994117');
-                toast.success('Número de cuenta copiado');
-              }}
-              sx={{
-                fontSize: { xs: '0.65rem', sm: '0.75rem' },
-                py: 0.5,
-                px: 1,
-                textTransform: 'none',
-              }}
-            >
-              Copiar
-            </Button>
-          </Box>
-        </Alert>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+              <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                Prueba con: {exampleAccountNumber}
+              </Typography>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<ContentCopyIcon sx={{ fontSize: '0.875rem' }} />}
+                onClick={() => {
+                  navigator.clipboard.writeText(exampleAccountNumber);
+                  toast.success('Número de cuenta copiado');
+                }}
+                sx={{
+                  fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                  py: 0.5,
+                  px: 1,
+                  textTransform: 'none',
+                }}
+              >
+                Copiar
+              </Button>
+            </Box>
+          </Alert>
+        )}
         
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Box>

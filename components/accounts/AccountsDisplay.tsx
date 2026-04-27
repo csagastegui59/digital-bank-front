@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import TransferModal from './TransferModal';
 import TransactionsHistoryModal from './TransactionsHistoryModal';
 import { accountBlockService } from '@/services/account/account-block-service';
+import { accountService } from '@/services/account/account-service';
 import ConfirmDialog from '../common/ConfirmDialog';
 
 interface AccountsDisplayProps {
@@ -23,6 +24,8 @@ export default function AccountsDisplay({ accounts, userId, onBalanceUpdate }: A
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
     const [isRequestingUnblock, setIsRequestingUnblock] = useState(false);
+    const [exampleUSD, setExampleUSD] = useState<string | null>(null);
+    const [examplePEN, setExamplePEN] = useState<string | null>(null);
 
     const handleOpenTransfer = (account: Account) => {
         setSelectedAccount(account);
@@ -55,6 +58,17 @@ export default function AccountsDisplay({ accounts, userId, onBalanceUpdate }: A
         const match = document.cookie.match(new RegExp('(^| )access_token=([^;]+)'));
         return match ? match[2] : null;
     };
+
+    useEffect(() => {
+        const token = getAccessToken();
+        if (!token) return;
+        accountService.getActiveAccountByCurrency('USD', token)
+            .then((res) => setExampleUSD(res.accountNumber))
+            .catch(() => {});
+        accountService.getActiveAccountByCurrency('PEN', token)
+            .then((res) => setExamplePEN(res.accountNumber))
+            .catch(() => {});
+    }, []);
 
     const handleBlockAccount = (account: Account) => {
         console.log('Intentando bloquear cuenta:', account);
@@ -307,42 +321,46 @@ export default function AccountsDisplay({ accounts, userId, onBalanceUpdate }: A
             </Grid>
             
             {/* Test Account Numbers */}
-            {accounts.length > 0 && (
+            {accounts.length > 0 && (exampleUSD || examplePEN) && (
                 <Alert severity="info" sx={{ mt: 4, borderRadius: 2 }}>
                     <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
                         💡 Números de cuenta de prueba para transferencias:
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection:{ xs: 'column', sm: 'row' }, gap: 2, flexWrap: 'wrap' }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
-                                0159497042319579
-                            </Typography>
-                            <IconButton
-                                size="small"
-                                onClick={() => {
-                                    navigator.clipboard.writeText('0159497042319579');
-                                    toast.success('Número de cuenta copiado');
-                                }}
-                                sx={{ p: 0.5 }}
-                            >
-                                <ContentCopyIcon sx={{ fontSize: '0.875rem' }} />
-                            </IconButton>
-                        </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
-                                0159374243994117
-                            </Typography>
-                            <IconButton
-                                size="small"
-                                onClick={() => {
-                                    navigator.clipboard.writeText('0159374243994117');
-                                    toast.success('Número de cuenta copiado');
-                                }}
-                                sx={{ p: 0.5 }}
-                            >
-                                <ContentCopyIcon sx={{ fontSize: '0.875rem' }} />
-                            </IconButton>
-                        </Box>
+                        {exampleUSD && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                                    USD: {exampleUSD}
+                                </Typography>
+                                <IconButton
+                                    size="small"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(exampleUSD);
+                                        toast.success('Número de cuenta copiado');
+                                    }}
+                                    sx={{ p: 0.5 }}
+                                >
+                                    <ContentCopyIcon sx={{ fontSize: '0.875rem' }} />
+                                </IconButton>
+                            </Box>
+                        )}
+                        {examplePEN && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                                    PEN: {examplePEN}
+                                </Typography>
+                                <IconButton
+                                    size="small"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(examplePEN);
+                                        toast.success('Número de cuenta copiado');
+                                    }}
+                                    sx={{ p: 0.5 }}
+                                >
+                                    <ContentCopyIcon sx={{ fontSize: '0.875rem' }} />
+                                </IconButton>
+                            </Box>
+                        )}
                     </Box>
                 </Alert>
             )}
